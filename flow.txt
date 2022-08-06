@@ -1,0 +1,59 @@
+// load game
+- set keypress listener to start game
+
+// start
+- initialize vars
+  - level = 1
+  - newSequence = false
+  - seqIndex = 0
+  - sequence = [randomButton]
+- change title to level
+- remove keypress listener
+- turn on click listener
+- set initial sequence
+- playSequence()
+
+// btnClickHandler
+- isValidClick(btn)
+- // valid:
+  - play button
+  - show button
+  - check newSequence
+    // true -> playSequence()
+
+- // invalid:
+  - play wrong
+  - show button
+  - call end
+
+// playSequence
+- start with delay
+- loop through sequence array:
+  - add delay for UX time of buttons
+  - show button
+  - play sound
+
+
+// isValidClick
+- check that click was correct and set response boolean
+- check end of sequence:
+  // end
+    - reset seqIndex to 0
+    - inc level & update
+    - set newSequence to true
+    - generate new sequence
+  // not end
+    - inc seqIndex
+    - set newSequence to false
+- return response
+
+// end
+- remove click listener
+- loadGame()
+- show game over title
+
+// helper funcs
+- play sound
+- show button
+- generate random button
+- show level

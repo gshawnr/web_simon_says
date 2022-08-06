@@ -1,112 +1,119 @@
-// global vars
-let currentLevel = 1;
-let positionIndex = 0;
-let currentSequence = [];
+// declare global vars
+let level;
+let newSequence;
+let seqIndex;
+let sequence;
 
-$(document).ready(() => {
+// load game
+$(document).ready(() => loadGame());
+
+const loadGame = () => {
   $(document).keypress(() => start());
-});
-
-/*
-  onload func
-    add event listener for any key to start
-    callback to:
-      hide text
-      call start func
-*/
-
-/*
-  Start game func
-*/
-const start = (key) => {
-  $(document).unbind("keypress");
-  showLevel();
-  currentSequence.push(generateButton());
-  $(".btn").click((e) => btnClickHandler(e));
-  runSequence();
-
-  // generate first ele of sequence
-  // set onclick listener
 };
 
-const btnClickHandler = (event) => {
-  const btnId = event.target.id;
+const start = async (key) => {
+  // initialze globals
+  level = 1;
+  newSequence = false;
+  seqIndex = 0;
+  sequence = [];
 
-  // is the selection valid
+  updateLevel(level);
+
+  // update event handlers
+  $(document).unbind("keypress");
+  $(".btn").click((e) => btnClickHandler(e));
+
+  // add initial sequence on start
+  sequence.push(generateButton());
+
+  await playSequence();
+};
+
+const btnClickHandler = async (event) => {
+  const btnId = event.target.id;
   let valid = isValidClick(btnId);
 
   if (valid) {
+    playSound(btnId);
     showSelected(btnId);
-    setTimeout(() => {}, 1000);
-    currentSequence.push(generateButton());
-    if (positionIndex === 0) runSequence();
-  } else end();
-};
-
-const runSequence = () => {
-  console.log("current sequence", currentSequence);
-  for (let i = 0; i < currentSequence.length; i++) {
-    showSelected(currentSequence[i]);
+    if (newSequence) await playSequence();
+  } else {
+    playSound("wrong");
+    showSelected(btnId);
+    end();
   }
 };
 
-const showLevel = () => {
-  $("#level-title").text(`Level ${currentLevel}`);
+const playSequence = async () => {
+  // add start delay to allow players to prepare
+  setTimeout(async () => {
+    for (let i = 0; i < sequence.length; i++) {
+      // slow execution of the loop for UX purposes
+      await sleep(700);
+      playSound(sequence[i]);
+      showSelected(sequence[i]);
+    }
+  }, 700);
 };
 
 const isValidClick = (btnId) => {
-  const valid = currentSequence[positionIndex] === btnId;
-  positionIndex =
-    positionIndex === currentSequence.length - 1 ? 0 : positionIndex++;
+  const isValid = sequence[seqIndex] === btnId;
+  const isEndOfSequence = seqIndex === sequence.length - 1;
 
-  console.log("posIndex", positionIndex);
+  if (isEndOfSequence) {
+    const sequenceLength = ++sequence.length;
+    seqIndex = 0;
+    updateLevel(++level);
+    generateSequence(sequenceLength);
+    newSequence = true;
+  } else {
+    seqIndex++;
+    newSequence = false;
+  }
 
-  return valid;
+  return isValid;
 };
 
-/*
-  generate random button fnc
-*/
+const end = () => {
+  $(".btn").unbind("click");
+  $("#level-title").text("Game Over - Press Any Key to Start");
+  loadGame();
+};
+
+// HELPER FUNCS
 const generateButton = () => {
   const btns = ["red", "blue", "green", "yellow"];
-
-  const number = randomNum();
+  const number = Math.floor(Math.random() * 4);
   const button = btns[number];
-
-  console.log("random button", button);
   return button;
 };
 
-const randomNum = () => {
-  const number = Math.floor(Math.random() * 4);
-  console.log("random generated number", number);
-  return number;
-};
-
-/*
-  end game func
-  set listener to start game
-*/
-const end = () => {
-  const audio = new Audio(`./sounds/wrong.mp3`);
-  audio.play();
-  $("#level-title").text("Game Over - Press Any Key to Start");
-  $(".btn").unbind("click");
-  currentSequence = [];
-  $(document).keypress(() => start());
+const generateSequence = (length) => {
+  const arr = [];
+  for (let i = 0; i < length; i++) {
+    arr.push(generateButton());
+  }
+  sequence = arr;
 };
 
 const playSound = (btnId) => {
   const audio = new Audio(`./sounds/${btnId}.mp3`);
   audio.play();
 };
-const showSelected = (btnId) => {
-  const audio = new Audio(`./sounds/${btnId}.mp3`);
-  audio.play();
-  const selector = "#" + btnId;
-  $(selector).addClass("pressed");
 
+const updateLevel = (newLevel) => {
+  $("#level-title").text(`Level ${newLevel}`);
+};
+
+const showSelected = (btnId) => {
+  $(`#${btnId}`).addClass("pressed");
+  // remove selection after delay
   setTimeout(() => {
-    $(selector).removeClass("pressed");
+    $(`#${btnId}`).removeClass("pressed");
   }, 150);
+};
+
+const sleep = (time) => {
+  return new Promise((resolve) => setTimeout(resolve, time));
 };
