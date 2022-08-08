@@ -78,6 +78,13 @@ const isValidClick = (btnId) => {
 const end = () => {
   $(".btn").unbind("click");
   $("#level-title").text("Game Over - Press Any Key to Start");
+
+  // flash red screen
+  $("body").addClass("red");
+  setTimeout(() => {
+    $("body").removeClass("red");
+  }, 150);
+
   loadGame();
 };
 
