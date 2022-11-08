@@ -8,7 +8,7 @@ let sequence;
 $(document).ready(() => loadGame());
 
 const loadGame = () => {
-  $(document).keydown(() => start());
+  $(".btn").click(() => start());
 };
 
 const start = async (key) => {
@@ -21,7 +21,7 @@ const start = async (key) => {
   updateLevel(level);
 
   // update event handlers
-  $(document).unbind("keydown");
+  $(".btn").unbind("click");
   $(".btn").click((e) => btnClickHandler(e));
 
   // add initial sequence on start
